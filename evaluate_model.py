@@ -49,7 +49,20 @@ elif dataset_name == 'openai/gsm8k':
     MAX_TOKENS = tok_limit
     TEST_TEMPERATURE = 0.6
     MAX_TEST_SAMPLES = 1319
-
+if dataset_name == 'Maxwell-Jia/AIME_2024':
+    dataset = load_from_disk('benchmarks/AIME2024')
+    print("\nDataset columns:", dataset['train'].column_names)  # 添加这行
+    TEST_N = 5
+    MAX_TOKENS = tok_limit
+    TEST_TEMPERATURE = 0.6
+    MAX_TEST_SAMPLES = 30
+elif dataset_name == 'opencompass/AIME2025':
+    dataset = load_from_disk('benchmarks/AIME2025')
+    print("\nDataset columns:", dataset['train'].column_names)  # 添加这行
+    TEST_N = 5
+    MAX_TOKENS = tok_limit
+    TEST_TEMPERATURE = 0.6
+    MAX_TEST_SAMPLES = 15
 
 def get_scores(ds, outputs, save_file_name=None):
     predictions, golds = [], []
@@ -130,8 +143,9 @@ def get_scores(ds, outputs, save_file_name=None):
 
 def evaluate_model(model_name):
     test_prompts = []
-    model = LLM(model_name, tokenizer=f'deepseek-ai/DeepSeek-R1-Distill-Qwen-{scale}', gpu_memory_utilization=0.9, tensor_parallel_size=1)    
-    test_ds = dataset['test'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['test']))))
+    model = LLM(f'./DeepSeek-R1-Distill-Qwen-{scale}', tokenizer=f'./DeepSeek-R1-Distill-Qwen-{scale}', gpu_memory_utilization=0.9, 
+                tensor_parallel_size=1, max_model_len = MAX_TOKENS + 8192, swap_space=80)    
+    test_ds = dataset['train'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['train']))))
     
     for x in test_ds:
         prompt = [{
