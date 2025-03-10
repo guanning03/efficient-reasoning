@@ -181,3 +181,5 @@ datasets/compression_dataset/
 DeepSeek-R1-Distill-Qwen-7B/
 DeepSeek-R1-Errors/
 benchmarks/
+Qwen2.5-0.5B/
+ckpt/

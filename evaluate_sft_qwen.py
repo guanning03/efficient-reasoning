@@ -9,10 +9,6 @@ import numpy as np
 
 
 # This script evaluates a model on a dataset
-'''
-python evaluate_model.py --model_path="./DeepSeek-R1-Distill-Qwen-7B" --dataset="openai/gsm8k" --tok_limit=32768
-python evaluate_model.py --model_path="./Qwen2.5-0.5B" --dataset="openai/gsm8k" --tok_limit=32768
-'''
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_path', type=str, default='')
@@ -46,7 +42,7 @@ elif dataset_name == 'di-zhang-fdu/MATH500':
     TEST_TEMPERATURE = 0.6
     MAX_TEST_SAMPLES = 500
 elif dataset_name == 'openai/gsm8k':
-    dataset = load_from_disk('benchmarks/gsm8k', 'main')
+    dataset = load_dataset(dataset_name, 'main')
     TEST_N = 1
     MAX_TOKENS = tok_limit
     TEST_TEMPERATURE = 0.6
@@ -149,10 +145,8 @@ def evaluate_model(model_name):
                 tensor_parallel_size=1, max_model_len = MAX_TOKENS + 8192, swap_space=80)    
     
     if dataset_name == 'openai/gsm8k':
-        print('Using Test Set')
         test_ds = dataset['test'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['test']))))
     else:
-        print('Using Train Set')
         test_ds = dataset['train'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['train']))))
     
     for x in test_ds:

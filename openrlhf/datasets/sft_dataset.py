@@ -66,7 +66,9 @@ class SFTDataset(Dataset):
 
         # Parallel loading datasets
         processed_dataset = dataset.map(
-            self.process_data, remove_columns=dataset.column_names, num_proc=num_processors
+            self.process_data, 
+            remove_columns=dataset.column_names, 
+            num_proc=num_processors
         )
         processed_dataset = processed_dataset.filter(lambda x: x["prompt"] is not None)
 
@@ -85,12 +87,11 @@ class SFTDataset(Dataset):
         )
         if not self.pretrain_mode:
             prompt_token = self.tokenizer(
-                prompt,
-                max_length=self.max_length,
-                padding=False,
+                text=prompt,
+                padding=True,
                 truncation=True,
+                max_length=self.max_length,
                 return_tensors="pt",
-                add_special_tokens=False,
             )
             prompt_ids_len = prompt_token["attention_mask"].int().sum().item()
 

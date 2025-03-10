@@ -30,3 +30,19 @@ RESPONSE_COMPARATOR = {
     'Maxwell-Jia/AIME_2024': lambda x, y: math_equal(x, y, timeout=True),  # 补充
     'opencompass/AIME2025': lambda x, y: math_equal(x, y, timeout=True)    # 补充
 }
+
+# def extract_official_dataset_id(dataset_name):
+#     name = dataset_name.split('/')[-1]
+#     dataset_dict = {
+#         'gsm8k': 'openai/gsm8k',
+#         'MATH500': 'di-zhang-fdu/MATH500',
+#         'AIME_2024': 'Maxwell-Jia/AIME_2024',
+#         'AIME2024': 'Maxwell-Jia/AIME_2024',
+#         'AIME2025': 'opencompass/AIME2025',
+#         'competition_math': 'hendrycks/competition_math',
+#         'compression_dataset': 'datasets/compression_dataset',
+#         'converted_aime_dataset': 'datasets/converted_aime_dataset'
+#     }
+#     return dataset_dict[name]
+
+

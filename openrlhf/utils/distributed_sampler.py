@@ -105,13 +105,23 @@ class DistributedSampler(Sampler[_T_co]):
         self.consumed_indicies = consumed_samples // self.num_replicas
 
     def __iter__(self) -> Iterator[_T_co]:
+        
         if self.shuffle:
-            # deterministically shuffle based on epoch and seed
-            g = torch.Generator()
-            g.manual_seed(self.seed + self.epoch)
-            indices = torch.randperm(len(self.dataset), generator=g).tolist()  # type: ignore[arg-type]
+            try:
+                # 直接创建 CUDA Generator
+                if torch.cuda.is_available():
+                    g = torch.Generator(device='cuda')
+                else:
+                    g = torch.Generator()
+            except (RuntimeError, ValueError, AttributeError) as e:
+                print(f"Warning: Failed to create CUDA generator: {e}")
+                # 如果创建 CUDA Generator 失败，使用 CPU Generator
+                g = torch.Generator()
+            
+            g.manual_seed(self.epoch)
+            indices = torch.randperm(len(self.dataset), generator=g).tolist()
         else:
-            indices = list(range(len(self.dataset)))  # type: ignore[arg-type]
+            indices = list(range(len(self.dataset)))
 
         if not self.drop_last:
             # add extra samples to make it evenly divisible
