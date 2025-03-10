@@ -1,6 +1,6 @@
 from vllm import LLM, SamplingParams
 
-model = LLM('./Qwen2.5-0.5B', max_model_len=8192)
+model = LLM('./DeepSeek-R1-Distill-Qwen-7B', max_model_len=8192)
 
 # 定义颜色代码
 BLUE = '\033[94m'    # 用户文本颜色
@@ -12,7 +12,7 @@ sampling_params = SamplingParams(temperature=0.7, max_tokens=1024)
 
 # 打印带颜色的问题
 
-Question = "Can you tell me a joke?"
+Question = "What is the capital of France?"
 print(f"{BLUE}User: {Question}{RESET}")
 
 # 获取模型回答
