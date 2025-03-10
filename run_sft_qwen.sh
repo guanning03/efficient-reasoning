@@ -11,23 +11,24 @@
 
 echo "job is starting on `hostname`"
 
-# 设置 wandb 离线模式
-export WANDB_MODE=offline
+export MASTER_PORT=$((12000 + RANDOM % 20000))  # 随机生成一个端口号
+export CUDA_VISIBLE_DEVICES=3
+# export WANDB_MODE=offline
 export OMPI_MCA_opal_cuda_support=true
 
-MODEL_PATH="./Qwen2.5-0.5B"
-DATASET="gsm8k"
+MODEL_PATH="Qwen2.5-0.5B"
+DATASET="openai/gsm8k"
 WANDB_KEY="256879fdda25bc1fb8ee4f0310e71615e92f75c9" 
 
 # 训练相关参数
 LEARNING_RATE=5e-6
-MAX_EPOCHS=50
-MICRO_BATCH_SIZE=32
-TRAIN_BATCH_SIZE=32
+MAX_EPOCHS=5
+MICRO_BATCH_SIZE=27
+TRAIN_BATCH_SIZE=27
 MAX_LENGTH=32768
-SAVE_STEPS=200
-LOGGING_STEPS=10
-EVAL_STEPS=100
+SAVE_STEPS=69
+LOGGING_STEPS=1
+EVAL_STEPS=69
 
 RUN_NAME="sft_qwen_gsm8k"
 SAVE_PATH="./ckpt/$RUN_NAME"

@@ -7,11 +7,13 @@ import pandas as pd
 import argparse
 import numpy as np
 
+os.makedirs('results', exist_ok=True)
+os.makedirs('outputs', exist_ok=True)
 
 # This script evaluates a model on a dataset
 '''
-python evaluate_model.py --model_path="./DeepSeek-R1-Distill-Qwen-7B" --dataset="openai/gsm8k" --tok_limit=32768
-python evaluate_model.py --model_path="./Qwen2.5-0.5B" --dataset="openai/gsm8k" --tok_limit=32768
+python evaluate_model.py --model_path="DeepSeek-R1-Distill-Qwen-7B" --dataset="openai/gsm8k" --tok_limit=32768
+python evaluate_model.py --model_path="Qwen2.5-0.5B" --dataset="openai/gsm8k" --tok_limit=32768
 '''
 
 parser = argparse.ArgumentParser()

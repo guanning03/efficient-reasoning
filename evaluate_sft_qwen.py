@@ -6,28 +6,39 @@ from utils import DATASET_KEYS, RESPONSE_EXTRACTOR, RESPONSE_COMPARATOR
 import pandas as pd
 import argparse
 import numpy as np
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
+os.makedirs('results', exist_ok=True)
+os.makedirs('outputs', exist_ok=True)
 
-# This script evaluates a model on a dataset
+# 设置全局变量
+base_model_path = 'Qwen2.5-0.5B'
+ckpt_path = "ckpt/checkpoints_sft/global_step1380/mp_rank_00_model_states.pt"
+# ckpt_path = None
+ckpt_shortname = 'qwen_gsm8k_sft_step1380'
+dataset_name = "openai/gsm8k"
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default='')
-parser.add_argument('--dataset', type=str)
-parser.add_argument('--tok_limit', type=int, default=32768)
+# parser.add_argument('--dataset', type=str)
+parser.add_argument('--tok_limit', type=int, default=8192)
 args = parser.parse_args()
 os.environ['TOKENIZERS_PARALLELISM'] = "false"
+split = 'test'
 
-dataset_name = args.dataset
-model_path = args.model_path
+# dataset_name = args.dataset
 tok_limit = args.tok_limit
-dataset_name = args.dataset
 results = {}
 
-print("Dataset:", dataset_name, "\nModel:", model_path)
+print("Dataset:", dataset_name)
+print("Base model:", base_model_path)
+print("Checkpoint:", ckpt_path)
 
 QUESTION_KEY = DATASET_KEYS[dataset_name]["question"]
 ANSWER_KEY = DATASET_KEYS[dataset_name]["answer"]
 eq = RESPONSE_COMPARATOR[dataset_name]
+if not ckpt_path:
+    ckpt_shortname = base_model_path
 
 if dataset_name == 'datasets/converted_aime_dataset':
     dataset = load_from_disk(dataset_name)
@@ -139,16 +150,50 @@ def get_scores(ds, outputs, save_file_name=None):
     }
 
 
-def evaluate_model(model_name):
+def evaluate_model():
     test_prompts = []
-    model = LLM(model_path, tokenizer=model_path, gpu_memory_utilization=0.9, 
-                tensor_parallel_size=1, max_model_len = MAX_TOKENS + 8192, swap_space=80)    
+
+    # 首先用transformers加载基础模型和tokenizer
+    print("正在加载基础模型...")
+    base_model = AutoModelForCausalLM.from_pretrained(
+        base_model_path,
+        device_map="cpu",  # 先加载到CPU
+        trust_remote_code=True
+    )
     
-    if dataset_name == 'openai/gsm8k':
-        test_ds = dataset['test'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['test']))))
-    else:
-        test_ds = dataset['train'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['train']))))
+    # 如果有checkpoint，加载并更新模型权重
+    if ckpt_path:
+        print(f"正在加载checkpoint: {ckpt_path}")
+        checkpoint = torch.load(ckpt_path, map_location="cpu")
+        if "module" in checkpoint:
+            checkpoint = checkpoint["module"]
+        # 更新模型权重
+        base_model.load_state_dict(checkpoint, strict=False)
     
+    # 将更新后的权重保存为临时文件
+    temp_model_path = "temp_model"
+    print("正在保存更新后的模型...")
+    base_model.save_pretrained(temp_model_path)
+    del base_model  # 释放内存
+    torch.cuda.empty_cache()
+    
+    # 使用vLLM加载更新后的模型
+    print("正在初始化vLLM...")
+    model = LLM(
+        model=temp_model_path,  # 使用保存的临时模型
+        tokenizer=base_model_path,  # 仍使用原始tokenizer
+        gpu_memory_utilization=0.9,
+        tensor_parallel_size=1,
+        max_model_len=MAX_TOKENS + 8192,
+        swap_space=80
+    )
+
+    # if dataset_name == 'openai/gsm8k':
+    #     split = 'test'
+    # else:
+    #     split = 'train'
+    test_ds = dataset[split].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset[split]))))
+
     for x in test_ds:
         prompt = [{
             "role": "user",
@@ -168,17 +213,17 @@ def evaluate_model(model_name):
     start_time = time.time()
     test_outputs = model.generate(prompt_token_ids=test_prompts, sampling_params=sampling_params, use_tqdm=True)
     end_time = time.time()
-    test_scores = get_scores(test_ds, test_outputs, f"outputs/{dataset_name.replace('/', '_')}_results_{model_path.replace('/', '_')}_{tok_limit}.json")
+    test_scores = get_scores(test_ds, test_outputs, f"outputs/{dataset_name.replace('/', '_')}-{split}_results_{ckpt_shortname}_{tok_limit}.json")
     print("Test:", test_scores)
     time_taken = end_time - start_time
     print("Time taken:", time_taken)
 
     return {'test': test_scores, 'time_taken': time_taken}
 
-print("Found model_path:", model_path)
-print("This is not a checkpoint, will evaluate directly...")
-scores = evaluate_model(model_path)
-results[model_path] = scores
+print("Evaluating model...")
+scores = evaluate_model()
+results[base_model_path] = scores
 
-with open(f'results/{dataset_name.replace("/", "_")}_results_{model_path.replace("/", "_")}_{tok_limit}.json', 'w') as f:
+save_path = f'results/{dataset_name.replace("/", "_")}-{split}_results_{ckpt_shortname}_{tok_limit}.json'
+with open(save_path, 'w') as f:
     json.dump(results, f, indent=4)

@@ -37,7 +37,6 @@ def train(args):
         packing_samples=args.packing_samples,
     )
     
-    # 修改这行，添加默认值False
     tokenizer = get_tokenizer(args.pretrain, model.model, "right", strategy, use_fast=True)
     strategy.print(model)
 

@@ -98,9 +98,13 @@ class SFTTrainer(ABC):
             self._tensorboard = SummaryWriter(log_dir=log_dir)
 
     def fit(self, args, consumed_samples=0, num_update_steps_per_epoch=None):
+        # 在训练开始前先进行一次评估
+        if len(self.eval_dataloader) > 0:
+            self.evaluate(self.eval_dataloader, steps=0)
+        
         # get eval and save steps
         if args.eval_steps == -1:
-            args.eval_steps = num_update_steps_per_epoch  # Evaluate once per epoch
+            args.eval_steps = num_update_steps_per_epoch
         if args.save_steps == -1:
             args.save_steps = float("inf")  # do not save ckpt
 
@@ -172,6 +176,8 @@ class SFTTrainer(ABC):
 
                 gpt_loss = self.loss_fn(output.logits, labels)
                 loss = gpt_loss + aux_loss * self.args.aux_loss_coef
+                # 这里的aux_loss是一个辅助的loss，只在专家模型中使用
+                # 目的是让所有专家都得到充分训练，防止模型忽视一部分专家
                 self.strategy.backward(loss, self.model, self.optimizer)
                 self.strategy.optimizer_step(self.optimizer, self.model, self.scheduler)
 
