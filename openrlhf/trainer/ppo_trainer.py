@@ -277,6 +277,8 @@ class PPOTrainer(ABC):
 
         status_list = []
         status_mean = {}
+        
+        # iteration over epochs
         for epoch in range(self.max_epochs):
             pbar = tqdm(
                 dataloader,

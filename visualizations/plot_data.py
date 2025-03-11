@@ -17,8 +17,8 @@ test_tokens = [data[str(step)]['test']['scores']['avg_tokens'] for step in steps
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6, 3))
 
 # 绘制第一个子图：Pass Rates
-ax1.plot(epochs, train_pass_rates, 'b-o', label='Train Pass Rate')
-ax1.plot(epochs, test_pass_rates, 'r-o', label='Test Pass Rate')
+ax1.plot(epochs, train_pass_rates, 'b-o', label='Training Set')
+ax1.plot(epochs, test_pass_rates, 'r-o', label='Test Set')
 ax1.set_xlabel('SFT Epochs')
 ax1.set_ylabel('Average Pass Rate')
 ax1.set_title('Train vs Test Pass Rates')
@@ -27,8 +27,8 @@ ax1.legend()
 ax1.set_xticks(epochs)
 
 # 绘制第二个子图：Average Tokens
-ax2.plot(epochs, train_tokens, 'b-o', label='Train Avg Tokens')
-ax2.plot(epochs, test_tokens, 'r-o', label='Test Avg Tokens')
+ax2.plot(epochs, train_tokens, 'b-o', label='Training Set')
+ax2.plot(epochs, test_tokens, 'r-o', label='Test Set')
 ax2.set_xlabel('SFT Epochs')
 ax2.set_ylabel('Average Tokens')
 ax2.set_title('Train vs Test Average Tokens')

@@ -51,7 +51,7 @@ python -m openrlhf.cli.train_sft \
     --bf16 \
     --flash_attn \
     --gradient_checkpointing \
-    --input_template $'<|im_start|>user\n{}\n<|im_end|>\n<|im_start|>assistant\n' \
+    --input_template $'<|im_start|>user\nPlease reason step by step and put your final answer after ####. Question: {}\n<|im_end|>\n<|im_start|>assistant\n' \
     --wandb_run_name $RUN_NAME \
     --use_wandb $WANDB_KEY \
     --max_ckpt_num 1000 \

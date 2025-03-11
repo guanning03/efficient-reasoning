@@ -158,11 +158,8 @@ def evaluate_model(model_name):
         test_ds = dataset['train'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['train']))))
     
     for x in test_ds:
-        prompt = [{
-            "role": "user",
-            "content": f"Please reason step by step, and put your final answer within \\boxed{{}}. Question: {x[QUESTION_KEY]}",
-        }]
-        prompt_tokens = model.llm_engine.tokenizer.tokenizer.apply_chat_template(prompt, add_generation_prompt=True)
+        prompt = f"<|im_start|>user\nPlease reason step by step and put your final answer after ####. Question: {x[QUESTION_KEY]}\n<|im_end|>\n<|im_start|>assistant\n"
+        prompt_tokens = model.llm_engine.tokenizer.tokenizer.encode(prompt)
         test_prompts.append(prompt_tokens)
     
     sampling_params = SamplingParams(

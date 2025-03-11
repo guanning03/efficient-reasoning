@@ -1,5 +1,5 @@
 import os, time
-os.environ['CUDA_VISIBLE_DEVICES'] = '7'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 import json
 from vllm import LLM, SamplingParams
@@ -185,7 +185,7 @@ def evaluate_model(ckpt_path, step, split):
     model = LLM(
         model=temp_model_path,  # 使用保存的临时模型
         tokenizer=base_model_path,  # 仍使用原始tokenizer
-        gpu_memory_utilization=0.9,
+        gpu_memory_utilization=0.7,  # 将显存使用率设置为60%
         tensor_parallel_size=1,
         max_model_len=MAX_TOKENS + 8192,
         swap_space=80
@@ -195,11 +195,8 @@ def evaluate_model(ckpt_path, step, split):
     test_ds = dataset[split].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset[split]))))
 
     for x in test_ds:
-        prompt = [{
-            "role": "user",
-            "content": f"Please reason step by step, and put your final answer within \\boxed{{}}. Question: {x[QUESTION_KEY]}",
-        }]
-        prompt_tokens = model.llm_engine.tokenizer.tokenizer.apply_chat_template(prompt, add_generation_prompt=True)
+        prompt = f"<|im_start|>user\nPlease reason step by step and put your final answer after ####. Question: {x[QUESTION_KEY]}\n<|im_end|>\n<|im_start|>assistant\n"
+        prompt_tokens = model.llm_engine.tokenizer.tokenizer.encode(prompt)
         test_prompts.append(prompt_tokens)
     
     sampling_params = SamplingParams(
