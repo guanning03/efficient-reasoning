@@ -32,9 +32,11 @@ def train(args):
         ds_config=strategy.get_ds_train_config(is_actor=True),
     )
 
+    # load actor model
     if args.actor_init_on_gpu:
         actor = actor.to(torch.cuda.current_device())
 
+    # load critic model
     if args.critic_pretrain:
         critic = get_llm_for_sequence_regression(
             args.critic_pretrain,
@@ -54,6 +56,7 @@ def train(args):
     else:
         critic = None
 
+    # load reward model
     if not args.remote_rm_url:
         reward_model = get_llm_for_sequence_regression(
             args.reward_pretrain,
@@ -125,13 +128,16 @@ def train(args):
         args.prompt_data_probs,
         strategy,
         args.seed,
-        max_count=args.max_samples,
+        max_count=args.max_samples, # 初始数据集最大样本数
         return_eval=False,
         train_split=args.prompt_split,
     )
     prompts_data = prompts_data.select(range(min(args.max_samples, len(prompts_data))))
     prompts_dataset = PromptDataset(prompts_data, tokenizer, strategy, input_template=args.input_template)
 
+    # pretrain_data is an optional dataset used for supervised finetuning
+    # its aim is to keep model's original language modeling capabilities 
+    # its loss is adjusted by ptx_coef
     if args.pretrain_data:
         pretrain_data = blending_datasets(
             args.pretrain_data,
@@ -144,6 +150,8 @@ def train(args):
         pretrain_max_len = args.max_len if args.max_len else args.prompt_max_len + args.generate_max_len
         pretrain_dataset = SFTDataset(
             pretrain_data.select(
+                # max_epochs * len(prompts_dataset) * n_samples_per_prompt represents the total number of training samples in one episode
+                # Therefore its reasonable to fetch same scale of data as pretrain_data for SFT
                 range(min(len(pretrain_data), args.max_epochs * len(prompts_dataset) * args.n_samples_per_prompt))
             ),
             tokenizer,

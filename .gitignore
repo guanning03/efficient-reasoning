@@ -185,3 +185,5 @@ benchmarks/
 Qwen2.5-0.5B/
 ckpt/
 temp_model/
+Qwen2-0.5B-Instruct/
+Qwen2.5-1.5B-Instruct/

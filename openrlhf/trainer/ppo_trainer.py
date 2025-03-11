@@ -189,7 +189,8 @@ class PPOTrainer(ABC):
         consumed_samples=0,
         num_update_steps_per_episodes=1,
     ) -> None:
-        num_rollouts_per_episodes = (
+        
+        num_rollouts_per_episodes = ( 
             num_update_steps_per_episodes
             * args.train_batch_size
             // args.max_epochs
@@ -210,7 +211,8 @@ class PPOTrainer(ABC):
         steps = consumed_samples // args.rollout_batch_size + 1
         start_episode = consumed_samples // args.rollout_batch_size // num_rollouts_per_episodes
         consumed_samples = consumed_samples % (num_rollouts_per_episodes * args.rollout_batch_size)
-
+        
+        # iterate over episodes
         for episode in range(start_episode, args.num_episodes):
             if isinstance(self.prompts_dataloader.sampler, DistributedSampler):
                 self.prompts_dataloader.sampler.set_epoch(
@@ -222,7 +224,11 @@ class PPOTrainer(ABC):
                 disable=not self.strategy.is_rank_0(),
             )
             total_steps = args.num_episodes * len(self.prompts_dataloader)
+            
+            # iterate over explore_steps
             for rand_prompts in self.prompts_dataloader:
+                
+                # iterate over rollout candidates
                 for i, experience in enumerate(
                     self.experience_maker.make_experience_list(rand_prompts, steps, total_steps, **self.generate_kwargs)
                 ):
@@ -235,6 +241,8 @@ class PPOTrainer(ABC):
 
                 torch.cuda.empty_cache()
                 self.replay_buffer.normalize("advantages", self.strategy)
+                
+                # train the model on the samples in the replay buffer
                 status = self.ppo_train(steps)
                 self.replay_buffer.clear()
                 torch.cuda.empty_cache()
