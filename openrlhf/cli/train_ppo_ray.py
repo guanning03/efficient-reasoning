@@ -77,20 +77,21 @@ def train(args):
     # So 0.75/0.25 gpu is a tricky to let Ray spread all models evenly on all gpus.
     #   |actor| ref  |actor| ref  |actor| ref  |actor|ref  |
     #   |GPU0 | GPU0 |GPU1 | GPU1 |GPU2 | GPU2 |GPU3 | GPU3 |
+    
     actor_model = PPORayActorGroup(
-        args.actor_num_nodes,
-        args.actor_num_gpus_per_node,
+        args.actor_num_nodes, # 1
+        args.actor_num_gpus_per_node, # 2
         ActorModelRayActor,
         pg=pg,
-        num_gpus_per_actor=0.75 if pg else 1,
+        num_gpus_per_actor=0.5 if pg else 1,
     )
 
     ref_model = PPORayActorGroup(
-        args.ref_num_nodes,
-        args.ref_num_gpus_per_node,
+        args.ref_num_nodes, # 1
+        args.ref_num_gpus_per_node, # 2
         ReferenceModelRayActor,
         pg=pg,
-        num_gpus_per_actor=0.25 if pg else 1,
+        num_gpus_per_actor=0.2 if pg else 1,
     )
 
     # if colocated, create placement group for critic and reward model explicitly.
@@ -108,7 +109,7 @@ def train(args):
         pg = placement_group(bundles, strategy="STRICT_SPREAD")
         ray.get(pg.ready())
 
-    if args.critic_pretrain:
+    if args.critic_pretrain: # False
         critic_model = PPORayActorGroup(
             args.critic_num_nodes,
             args.critic_num_gpus_per_node,

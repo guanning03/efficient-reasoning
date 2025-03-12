@@ -17,7 +17,7 @@ NUM_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 MODEL_SCALE='1.5B'
 REWARD_TYPE='sigmoid'
 ALPHA=0.1 # This controls the penalty for longer correct respones. Increase to penalize longer responses.
-WANDB_KEY="" # Provide your wandb key here before running
+WANDB_KEY="256879fdda25bc1fb8ee4f0310e71615e92f75c9" # Provide your wandb key here before running
 CHECK_EOS='--check_eos'
 SCHEDULER_TYPE='warmup_with_constant_lr' # can be cosine otherwise
 

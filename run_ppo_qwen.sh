@@ -10,7 +10,7 @@
 #SBATCH -e logs/slurm-%j.err
 #SBATCH -o logs/slurm-%j.out
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=1
 export WANDB_MODE=disabled
 echo "job is starting on `hostname`"
 
@@ -39,9 +39,9 @@ GENERATE_MAX_LEN=8192
 SAVE_STEPS=10
 SEED=42
 
-RUN_NAME="Qwen2.5-0.5B_rollout_$ROLLOUT_BATCH_SIZE"
+RUN_NAME="Qwen2.5-0.5B_ppo_rollout_$ROLLOUT_BATCH_SIZE"
 INPUT_KEY="problem"
-DATASET='openai/gsm8k'
+DATASET='benchmarks/gsm8k'
 BASE_PROJECT_DIR=ckpt/checkpoints_ppo/ # Change this to the path of the project directory
 RM_ADDRESS="0.0.0.0:24372"
 SAVE_PATH="$BASE_PROJECT_DIR/$RUN_NAME"
@@ -64,7 +64,7 @@ python -m reward_server.math_server \
   $CHECK_EOS \
   1> logs/server.out 2> logs/server.err&
 
-python -m openrlhf.cli.train_ppo_ray \
+python -m openrlhf.cli.train_ppo_ray_2 \
   --advantage_estimator gae \
   --n_samples_per_prompt 4 \
   --max_epochs $MAX_EPOCHS \
@@ -79,7 +79,6 @@ python -m openrlhf.cli.train_ppo_ray \
   --vllm_tensor_parallel_size 1 \
   --max_ckpt_num 10 \
   --num_episodes $NUM_EPISODES \
-  --colocate_all_models \
   --pretrain $PRETRAIN \
   --wandb_run_name $RUN_NAME \
   --save_path $SAVE_PATH \
