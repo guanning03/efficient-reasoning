@@ -1,0 +1,1 @@
+{'steps_per_print': 100, 'zero_optimization': {'stage': 0, 'stage3_param_persistence_threshold': 'auto', 'offload_param': {'device': 'none', 'pin_memory': True}}, 'bf16': {'enabled': True}, 'gradient_clipping': 1.0, 'prescale_gradients': False, 'wall_clock_breakdown': False, 'train_micro_batch_size_per_gpu': 1, 'train_batch_size': 128}

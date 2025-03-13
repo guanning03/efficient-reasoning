@@ -17,6 +17,7 @@ from openrlhf.trainer.ray import (
     create_vllm_engines,
 )
 from openrlhf.utils import get_strategy
+
 ray.init(runtime_env={"env_vars": {
     "RAY_DEBUG": "legacy", 
     "working_dir": "../../",
@@ -83,7 +84,7 @@ def train(args):
         args.actor_num_gpus_per_node, # 2
         ActorModelRayActor,
         pg=pg,
-        num_gpus_per_actor=0.5 if pg else 1,
+        num_gpus_per_actor=0.75 if pg else 1,
     )
 
     ref_model = PPORayActorGroup(
@@ -91,7 +92,7 @@ def train(args):
         args.ref_num_gpus_per_node, # 2
         ReferenceModelRayActor,
         pg=pg,
-        num_gpus_per_actor=0.2 if pg else 1,
+        num_gpus_per_actor=0.25 if pg else 1,
     )
 
     # if colocated, create placement group for critic and reward model explicitly.
