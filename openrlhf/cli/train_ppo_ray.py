@@ -158,6 +158,7 @@ def train(args):
             args.enable_prefix_caching,
             args.enforce_eager,
             max_len,
+            args.gpu_memory_utilization,
         )
 
     ray.get(refs)
@@ -222,6 +223,12 @@ if __name__ == "__main__":
     parser.add_argument("--vllm_sync_backend", type=str, default="gloo", help="DeepSpeed -> vLLM weight sync backend")
     parser.add_argument("--enable_prefix_caching", action="store_true", default=False)
     parser.add_argument("--enforce_eager", action="store_true", default=False, help="Disable CUDA graph in vLLM")
+    parser.add_argument(
+        "--gpu_memory_utilization",
+        type=float,
+        default=0.95,
+        help="Fraction of GPU memory to be used by vLLM"
+    )
 
     # Checkpoints
     parser.add_argument("--eval_steps", type=int, default=-1)

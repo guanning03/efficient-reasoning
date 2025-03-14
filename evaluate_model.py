@@ -1,4 +1,5 @@
 import os, time
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import json
 from vllm import LLM, SamplingParams
 from datasets import load_from_disk, load_dataset
@@ -12,8 +13,9 @@ os.makedirs('outputs', exist_ok=True)
 
 # This script evaluates a model on a dataset
 '''
-python evaluate_model.py --model_path="DeepSeek-R1-Distill-Qwen-7B" --dataset="openai/gsm8k" --tok_limit=32768
-python evaluate_model.py --model_path="Qwen2.5-0.5B" --dataset="openai/gsm8k" --tok_limit=32768
+python evaluate_model.py --model_path="DeepSeek-R1-Distill-Qwen-1.5B" --dataset="openai/gsm8k" --tok_limit=32768
+python evaluate_model.py --model_path="scale:1.5B_alpha:0.1" --dataset="openai/gsm8k" --tok_limit=32768
+python evaluate_model.py --model_path="ckpt/checkpoints_rloo/qwen_rloo_rollout_64" --dataset="openai/gsm8k" --tok_limit=8192
 '''
 
 parser = argparse.ArgumentParser()

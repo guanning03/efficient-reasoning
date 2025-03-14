@@ -187,3 +187,5 @@ ckpt/
 temp_model/
 Qwen2-0.5B-Instruct/
 Qwen2.5-1.5B-Instruct/
+
+scale:1.5B_alpha:0.1/

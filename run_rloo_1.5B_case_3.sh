@@ -10,12 +10,12 @@
 #SBATCH -e logs/slurm-%j.err
 #SBATCH -o logs/slurm-%j.out
 
-export CUDA_VISIBLE_DEVICES="1,2,3,4"
+export CUDA_VISIBLE_DEVICES="1,2"
 export WANDB_MODE="disabled"
 
 echo "job is starting on `hostname`"
 
-NUM_GPUS=4
+NUM_GPUS=2
 
 MODEL_SCALE='1.5B'
 REWARD_TYPE='sigmoid'
@@ -25,9 +25,9 @@ CHECK_EOS='--check_eos'
 SCHEDULER_TYPE='warmup_with_constant_lr' # can be cosine otherwise
 
 PRETRAIN='DeepSeek-R1-Distill-Qwen-1.5B'  
-ACTOR_NUM_GPUS=2
-REF_NUM_GPUS=2
-VLLM_NUM_ENGINES=2
+ACTOR_NUM_GPUS=1
+REF_NUM_GPUS=1
+VLLM_NUM_ENGINES=1
 ACTOR_LEARNING_RATE=5e-6
 INIT_KL_COEF=0.001
 MIN_P=0
@@ -62,6 +62,8 @@ python -m reward_server.math_server \
   --alpha $ALPHA \
   $CHECK_EOS \
   1> logs/server.out 2> logs/server.err&
+
+current_time=$(date +"%Y%m%d_%H%M%S")
 
 python -m openrlhf.cli.train_ppo_ray \
   --advantage_estimator rloo \
@@ -103,50 +105,5 @@ python -m openrlhf.cli.train_ppo_ray \
   --input_template $'<|im_start|>user\nPlease reason step by step and put your final answer after ####. Question: {}\n<|im_end|>\n<|im_start|>assistant\n' \
   --flash_attn \
   --gradient_checkpointing \
-  --use_wandb $WANDB_KEY
-
-# torchrun --nproc_per_node=4 \
-#     --node_rank=0 \
-#     --master_addr="localhost" \
-#     --master_port=29500 \
-#     -m openrlhf.cli.train_ppo_ray \
-#     --advantage_estimator rloo \
-#     --n_samples_per_prompt 8 \
-#     --max_epochs $MAX_EPOCHS \
-#     --remote_rm_url http://$RM_ADDRESS/query \
-#     --ref_num_nodes 1 \
-#     --ref_num_gpus_per_node $REF_NUM_GPUS \
-#     --actor_num_nodes 1 \
-#     --actor_num_gpus_per_node $ACTOR_NUM_GPUS \
-#     --vllm_num_engines $VLLM_NUM_ENGINES \
-#     --vllm_tensor_parallel_size 1 \
-#     --max_ckpt_num 10 \
-#     --num_episodes $NUM_EPISODES \
-#     --colocate_critic_reward \
-#     --colocate_actor_ref \
-#     --pretrain $PRETRAIN \
-#     --wandb_run_name $RUN_NAME \
-#     --save_path $SAVE_PATH \
-#     --ckpt_path $CKPT_PATH \
-#     --save_steps $SAVE_STEPS \
-#     --prompt_data_probs 1.0 \
-#     --scheduler_type $SCHEDULER_TYPE \
-#     --min_p $MIN_P \
-#     --micro_train_batch_size 1 \
-#     --train_batch_size 128 \
-#     --micro_rollout_batch_size 1 \
-#     --rollout_batch_size 32 \
-#     --max_samples 3200 \
-#     --prompt_max_len 512 \
-#     --generate_max_len $GENERATE_MAX_LEN \
-#     --zero_stage 2 \
-#     --bf16 \
-#     --seed $SEED \
-#     --actor_learning_rate $ACTOR_LEARNING_RATE \
-#     --init_kl_coef $INIT_KL_COEF \
-#     --prompt_data $DATASET \
-#     --input_key $INPUT_KEY \
-#     --input_template $'<|im_start|>user\nPlease reason step by step and put your final answer after ####. Question: {}\n<|im_end|>\n<|im_start|>assistant\n' \
-#     --flash_attn \
-#     --gradient_checkpointing \
-#     --use_wandb $WANDB_KEY
+  --use_wandb $WANDB_KEY \
+  1>logs/run_${current_time}_out.log 2>logs/run_${current_time}_err.log

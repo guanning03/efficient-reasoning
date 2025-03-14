@@ -89,6 +89,7 @@ def create_vllm_engines(
     enable_prefix_caching: bool,
     enforce_eager: bool,
     max_model_len: int,
+    gpu_memory_utilization: float = 0.9,
 ):
     vllm_engines = []
     # RAY_EXPERIMENTAL_NOSET_*_VISIBLE_DEVICES will always be set in current context,
@@ -102,8 +103,7 @@ def create_vllm_engines(
         scheduling_strategy = None
 
         if tensor_parallel_size > 1 or noset_visible_devices:
-            bundles = [{"GPU": 1, "CPU": 1}] * tensor_parallel_size
-            # bundles = [{"GPU": 0.25, "CPU": 1}] * tensor_parallel_size
+            bundles = [{"GPU": gpu_memory_utilization, "CPU": 1}] * tensor_parallel_size
             pg = placement_group(bundles)
             ray.get(pg.ready())
 
@@ -113,7 +113,7 @@ def create_vllm_engines(
         vllm_engines.append(
             LLMRayActor.options(
                 num_cpus=1,
-                num_gpus=num_gpus,
+                num_gpus=num_gpus * gpu_memory_utilization,
                 scheduling_strategy=scheduling_strategy,
             ).remote(
                 pretrain,
@@ -125,6 +125,7 @@ def create_vllm_engines(
                 enable_prefix_caching=enable_prefix_caching,
                 enforce_eager=enforce_eager,
                 max_model_len=max_model_len,
+                gpu_memory_utilization=gpu_memory_utilization,
             )
         )
 
