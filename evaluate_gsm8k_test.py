@@ -1,5 +1,5 @@
 import os, time
-os.environ['CUDA_VISIBLE_DEVICES'] = '6'
+os.environ['CUDA_VISIBLE_DEVICES'] = '7'
 import json
 from vllm import LLM, SamplingParams
 from datasets import load_from_disk, load_dataset
@@ -13,15 +13,7 @@ os.makedirs('outputs', exist_ok=True)
 
 # This script evaluates a model on a dataset
 '''
-python evaluate_model.py --model_path="DeepSeek-R1-Distill-Qwen-1.5B" --dataset="openai/gsm8k" --tok_limit=32768
-python evaluate_model.py --model_path="scale:1.5B_alpha:0.1" --dataset="openai/gsm8k" --tok_limit=32768
-python evaluate_model.py --model_path="ckpt/checkpoints_rloo/qwen_rloo_rollout_512" --dataset="openai/gsm8k" --tok_limit=8192
-python evaluate_model.py --model_path="qwen_1.5B_instruct" --dataset="openai/gsm8k" --tok_limit=16384
-python evaluate_model.py --model_path="qwen2_0.5B_instruct" --dataset="openai/gsm8k" --tok_limit=8192
-python evaluate_model.py --model_path="Qwen2-0.5B-Instruct" --dataset="openai/gsm8k" --tok_limit=8192
-python evaluate_model.py --model_path="ckpt/sft_qwen_gsm8k" --dataset="openai/gsm8k" --tok_limit=8192
-python evaluate_model.py --model_path="qwen_0.5B_sft" --dataset="openai/gsm8k" --tok_limit=8192
-python evaluate_model.py --model_path="qwen_0.5B_sft_lr_1e-6_alpha_0.0" --dataset="openai/gsm8k" --tok_limit=8192
+python evaluate_gsm8k_test.py --model_path="Qwen2.5-0.5B" --dataset="openai/gsm8k" --tok_limit=8192
 '''
 
 parser = argparse.ArgumentParser()
@@ -158,7 +150,7 @@ def evaluate_model(model_name):
     model = LLM(model_path, tokenizer=model_path, gpu_memory_utilization=0.7, 
                 tensor_parallel_size=1, max_model_len = MAX_TOKENS + 8192, swap_space=80)    
     
-    if dataset_name == 'openai/gsm8kk':
+    if dataset_name == 'openai/gsm8k':
         print('Using Test Set')
         test_ds = dataset['test'].shuffle(seed=0).select(range(min(MAX_TEST_SAMPLES, len(dataset['test']))))
     else:

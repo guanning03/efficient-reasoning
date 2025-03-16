@@ -10,14 +10,13 @@
 #SBATCH -e logs/slurm-%j.err
 #SBATCH -o logs/slurm-%j.out
 
-export CUDA_VISIBLE_DEVICES="1,2"
+export CUDA_VISIBLE_DEVICES="4,5"
 export WANDB_MODE="offline"
 
 echo "job is starting on `hostname`"
 
 NUM_GPUS=2
 
-MODEL_SCALE='1.5B'
 REWARD_TYPE='sigmoid'
 ALPHA=0.0 # This controls the penalty for longer correct respones. Increase to penalize longer responses.
 WANDB_KEY="256879fdda25bc1fb8ee4f0310e71615e92f75c9" # Provide your wandb key here before running
@@ -31,13 +30,13 @@ PRETRAIN='ckpt/sft_qwen_gsm8k'
 ACTOR_NUM_GPUS=1
 REF_NUM_GPUS=1
 VLLM_NUM_ENGINES=1
-ACTOR_LEARNING_RATE=5e-6
+ACTOR_LEARNING_RATE=1e-6
 INIT_KL_COEF=0.001
 MIN_P=0
 MAX_EPOCHS=1
 TOKENIZER='Qwen2.5-0.5B'
 NUM_EPISODES=1
-GENERATE_MAX_LEN=32000
+GENERATE_MAX_LEN=8192
 SAVE_STEPS=1
 SEED=42
 
@@ -45,7 +44,7 @@ RUN_NAME="qwen_rloo_rollout_$ROLLOUT_BATCH_SIZE"
 INPUT_KEY="problem"
 DATASET="benchmarks/gsm8k"
 BASE_PROJECT_DIR="ckpt/checkpoints_rloo" # Change this to the path of the project directory
-RM_ADDRESS="0.0.0.0:24374"
+RM_ADDRESS="0.0.0.0:24264"
 SAVE_PATH="$BASE_PROJECT_DIR/$RUN_NAME"
 CKPT_PATH="$SAVE_PATH"
 
@@ -54,7 +53,7 @@ echo "Using: ($DATASET) logging run to ($RUN_NAME)"
 # stop if any previous instances are running
 # ray stop
 # launch the master node of ray in container
-ray start --head --node-ip-address 0.0.0.0 --port=6381 --num-gpus $NUM_GPUS --ray-debugger-external
+ray start --head --node-ip-address 0.0.0.0 --port=6264 --num-gpus $NUM_GPUS --ray-debugger-external
 
 # launch reward server
 python -m reward_server.math_server \

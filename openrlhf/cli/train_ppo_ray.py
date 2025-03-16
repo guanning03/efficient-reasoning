@@ -226,7 +226,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--gpu_memory_utilization",
         type=float,
-        default=0.95,
+        default=0.9,
         help="Fraction of GPU memory to be used by vLLM"
     )
 

@@ -2,14 +2,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # 数据准备
-labels = ['sft', 'rollout_8', 'rollout_64', 'rollout_512', 'rollout_4096']
-pass_rate = [0.3093, 0.3093, 0.2661, 0.2234, 0.1804]
+labels = ['base', 'sft', 'rollout_8', 'rollout_64', 'rollout_512', 'rollout_4096']
+pass_rate = [0.2517, 0.3048, 0.4117, 0.3965, 0.3738, 0.3199]
 
 # 创建图形
 fig, ax = plt.subplots(figsize=(4, 3))
 
+# 设置颜色
+colors = ['#2878B5', '#D95319', '#77AC30', '#77AC30', '#77AC30', '#77AC30']
+
 # 绘制柱状图
-bars = ax.bar(range(len(labels)), pass_rate, color='#2878B5')
+bars = ax.bar(range(len(labels)), pass_rate, color=colors)
 
 # 设置y轴范围从0开始
 ax.set_ylim(0, max(pass_rate) * 1.2)

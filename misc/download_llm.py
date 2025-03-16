@@ -17,9 +17,14 @@ from huggingface_hub import snapshot_download
 #     local_dir="./DeepSeek-R1-Distill-Qwen-1.5B"  # 指定保存位置
 # )
 
+# model_path = snapshot_download(
+#    repo_id="Qwen/Qwen2-0.5B-Instruct",
+#    local_dir="./Qwen2-0.5B-Instruct"  # 指定保存位置
+# )
+
 model_path = snapshot_download(
-    repo_id="Qwen/Qwen2-0.5B-Instruct",
-    local_dir="./Qwen2-0.5B-Instruct"  # 指定保存位置
+    repo_id="Qwen/Qwen2.5-Math-1.5B",
+    local_dir="./Qwen2.5-Math-1.5B"  # 指定保存位置
 )
 
 print('success')

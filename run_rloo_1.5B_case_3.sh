@@ -10,8 +10,8 @@
 #SBATCH -e logs/slurm-%j.err
 #SBATCH -o logs/slurm-%j.out
 
-export CUDA_VISIBLE_DEVICES="1,2"
-export WANDB_MODE="disabled"
+export CUDA_VISIBLE_DEVICES="0,3"
+export WANDB_MODE="offline"
 
 echo "job is starting on `hostname`"
 
@@ -49,7 +49,7 @@ CKPT_PATH="$SAVE_PATH"
 echo "Using: ($DATASET) logging run to ($RUN_NAME)"
 
 # stop if any previous instances are running
-ray stop
+# ray stop
 # launch the master node of ray in container
 ray start --head --node-ip-address 0.0.0.0 --num-gpus $NUM_GPUS --ray-debugger-external
 

@@ -189,3 +189,14 @@ Qwen2-0.5B-Instruct/
 Qwen2.5-1.5B-Instruct/
 
 scale:1.5B_alpha:0.1/
+qwen2_0.5B_instruct/
+Qwen2.5-Math-1.5B/
+error.json
+qwen_0.5B_sft/
+qwen_0.5B_sft_lr_1e-6_alpha_0.0/
+qwen_0.5B_sft_lr_1e-6_alpha_0.1/
+qwen_1.5B_instruct/
+qwen_1.5B_instruct_lr_1e-6_alpha_0.0/
+qwen_1.5B_instruct_lr_1e-6_alpha_0.1/        
+qwen_1.5B_instruct_lr_1e-6_alpha_0.0/
+qwen_1.5B_instruct_lr_1e-6_alpha_0.1/
